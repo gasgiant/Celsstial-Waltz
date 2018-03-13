@@ -6,9 +6,11 @@ public class ArcPoint : MonoBehaviour {
 
     public Arc arc;
     public int index;
+    public AudioClip click;
 
     void OnTriggerEnter2D(Collider2D collision)
     {
         arc.DiactivatePoint(index);
+        //AudioSource.PlayClipAtPoint(click, transform.position);
     }
 }

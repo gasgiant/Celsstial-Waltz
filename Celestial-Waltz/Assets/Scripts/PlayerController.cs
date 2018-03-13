@@ -17,9 +17,10 @@ public class PlayerController : MonoBehaviour {
         metr = Metronome.instance;
     }
 
-    void Update ()
+    void FixedUpdate ()
     {
-        HandleControls();
+        if (metr.start)
+            HandleControls();
     }
 
     void HandleControls()
@@ -29,12 +30,12 @@ public class PlayerController : MonoBehaviour {
 
         if (Input.GetKey(KeyCode.A))
         {
-            rb.MoveRotation(rb.rotation + Time.deltaTime * rotationSpeed);
+            rb.MoveRotation(rb.rotation + Time.fixedDeltaTime * rotationSpeed);
         }
 
         if (Input.GetKey(KeyCode.D))
         {
-            rb.MoveRotation(rb.rotation - Time.deltaTime * rotationSpeed);
+            rb.MoveRotation(rb.rotation - Time.fixedDeltaTime * rotationSpeed);
         }
 
         rb.velocity = speed * new Vector2(-Mathf.Sin(Mathf.Deg2Rad * rb.rotation), Mathf.Cos(Mathf.Deg2Rad * rb.rotation));

@@ -70,6 +70,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   arc: {fileID: 0}
   index: 0
+  click: {fileID: 8300000, guid: f970a57efe36b224eab4d72f5e42cf47, type: 3}
 --- !u!212 &212046545243573262
 SpriteRenderer:
   m_ObjectHideFlags: 1
