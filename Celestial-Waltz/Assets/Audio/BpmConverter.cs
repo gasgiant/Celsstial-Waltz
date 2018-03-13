@@ -15,27 +15,27 @@ public class BpmConverter : MonoBehaviour {
     [ContextMenu("readBPM")]
     public void ReadBPM()
     {
-        //char ch = '\n';
-        //var t = time.text.Split(ch);
-        //var b = bpm.text.Split(ch);
+        char ch = '\n';
+        var t = time.text.Split(ch);
+        var b = bpm.text.Split(ch);
 
 
-        /*
-        times.Clear();
-        bpms.Clear();
+        
+        //times.Clear();
+        //bpms.Clear();
 
         for (int i = 0; i < t.Length; i++)
         {
-            //times.Add(System.Convert.ToSingle(t[i]));
+           // times.Add(System.Convert.ToSingle(t[i]));
         }
 
         for (int i = 0; i < b.Length; i++)
         {
-            bpms.Add(System.Convert.ToSingle(b[i]));
+            //bpms.Add(System.Convert.ToSingle(b[i]));
         }
-        */
-        //tempotrack.times = times;
-        //tempotrack.bpms = bpms;
+      
+        tempotrack.times = times.ToArray();
+        tempotrack.bpms = bpms.ToArray();
 
     }
 	

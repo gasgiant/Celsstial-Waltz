@@ -4,23 +4,48 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
-    float speed = 10;
-    float rotationSpeed = 80;
+    public PlayerState state = PlayerState.Stoped;
+    
+    public Vector3 direction;
+
+    float speed;
+    float rotationSpeed;
+    bool needsExtrapolation = true;
+
+    public static PlayerController instance;
 
     Metronome metr;
 
-    Rigidbody2D rb;
+    float audioTimeStutter;
 
-    void Start()
+    [HideInInspector]
+    public Transform targetArc;
+
+    [HideInInspector]
+    public Rigidbody2D rb;
+    [HideInInspector]
+    public Transform tr;
+
+    public int extrapBars = 3;
+    [HideInInspector]
+    public Vector3[] trajectExtrapolation;
+
+    void Awake()
     {
+        trajectExtrapolation = new Vector3[extrapBars];
         rb = GetComponent<Rigidbody2D>();
+        tr = transform;
         metr = Metronome.instance;
+        instance = this;
     }
 
     void FixedUpdate ()
     {
         if (metr.start)
             HandleControls();
+        if (needsExtrapolation && state == PlayerState.MovingForvard)
+            ExtrapolateTrajectory();
+        metr.deltaTime = 0;
     }
 
     void HandleControls()
@@ -28,16 +53,52 @@ public class PlayerController : MonoBehaviour {
         speed = metr.scale * metr.currentFreq;
         rotationSpeed = metr.currentFreq * 90;
 
+        state = PlayerState.MovingForvard;
+
         if (Input.GetKey(KeyCode.A))
         {
-            rb.MoveRotation(rb.rotation + Time.fixedDeltaTime * rotationSpeed);
+
+            rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed;
+            state = PlayerState.Rotating;
+            needsExtrapolation = true;
         }
 
         if (Input.GetKey(KeyCode.D))
         {
-            rb.MoveRotation(rb.rotation - Time.fixedDeltaTime * rotationSpeed);
+            rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed;
+            state = PlayerState.Rotating;
+            needsExtrapolation = true;
         }
 
-        rb.velocity = speed * new Vector2(-Mathf.Sin(Mathf.Deg2Rad * rb.rotation), Mathf.Cos(Mathf.Deg2Rad * rb.rotation));
+        direction = new Vector2(-Mathf.Sin(Mathf.Deg2Rad * rb.rotation), Mathf.Cos(Mathf.Deg2Rad * rb.rotation));
+        rb.position = rb.position + speed * (Vector2)direction * metr.deltaTime;
     }
+
+    void ExtrapolateTrajectory()
+    {
+        Vector3 pos = tr.position;
+        for (int i = 0; i < trajectExtrapolation.Length; i++)
+        {
+            trajectExtrapolation[i] = pos + metr.scale * (i + 1.333f - metr.positionInBar) *
+                new Vector3(-Mathf.Sin(Mathf.Deg2Rad * rb.rotation), Mathf.Cos(Mathf.Deg2Rad * rb.rotation));
+        }
+        needsExtrapolation = false;
+    }
+
+    void OnDrawGizmos()
+    {
+        if (state == PlayerState.MovingForvard)
+        {
+            Gizmos.color = Color.red;
+            Vector3 prevPosition = trajectExtrapolation[0];
+            for (int i = 0; i < trajectExtrapolation.Length; i++)
+            {
+                Gizmos.DrawLine(prevPosition, trajectExtrapolation[i]);
+                Gizmos.DrawSphere(trajectExtrapolation[i], 0.3f);
+                prevPosition = trajectExtrapolation[i];
+            }
+        }
+    }
+
+    public enum PlayerState { MovingForvard, Rotating, Stoped}
 }

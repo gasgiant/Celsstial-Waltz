@@ -4,13 +4,41 @@ using UnityEngine;
 
 public class ArcPoint : MonoBehaviour {
 
-    public Arc arc;
     public int index;
     public AudioClip click;
 
-    void OnTriggerEnter2D(Collider2D collision)
+    Transform tr;
+    GameObject go;
+
+    void OnEnable()
     {
-        arc.DiactivatePoint(index);
-        //AudioSource.PlayClipAtPoint(click, transform.position);
+        go = gameObject;
+        tr = transform;
+    }
+
+    public void Diactivate()
+    {
+        //AudioSource.PlayClipAtPoint(click, tr.position);
+        go.SetActive(false);
+    }
+
+    public void SetPosition(Vector3 newPosition)
+    {
+        tr.position = newPosition;
+    }
+
+    public void SetLocalPosition(Vector3 newPosition)
+    {
+        tr.localPosition = newPosition;
+    }
+
+    public Vector3 GetPosition()
+    {
+        return tr.position;
+    }
+
+    public Vector3 GetLocalPosition()
+    {
+        return tr.localPosition;
     }
 }
