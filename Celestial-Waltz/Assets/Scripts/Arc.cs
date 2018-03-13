@@ -79,11 +79,11 @@ public class Arc : MonoBehaviour {
 
     void SnapUpdate(int bar)
     {
+        //if (bar < 2) bar = 2;
         Vector3 target = PlayerController.instance.trajectExtrapolation[bar];
         tr.position = Vector3.SmoothDamp(tr.position, target, ref vel, snapTime, maxSnapSpeed);
 
-        //rotation = Mathf.SmoothDamp(rotation, PlayerController.instance.rb.rotation, ref rotVel, assistTime);
-        rotation = PlayerController.instance.rb.rotation;
+        rotation = Mathf.SmoothDamp(rotation, PlayerController.instance.rb.rotation, ref rotVel, snapTime);
         tr.rotation = Quaternion.Euler(0, 0, rotation);
     }
 
