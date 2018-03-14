@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class AnimatorTest : MonoBehaviour {
 
+    Animator anim;
+
     void Start()
     {
-        
+        anim = GetComponent<Animator>();
     }
 
     void Update ()

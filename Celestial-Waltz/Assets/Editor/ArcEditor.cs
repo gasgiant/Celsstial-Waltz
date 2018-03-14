@@ -2,6 +2,7 @@
 using UnityEditor;
 
 [CustomEditor(typeof(Arc))]
+[CanEditMultipleObjects]
 public class ArcEditor : Editor
 {
     Arc arc;

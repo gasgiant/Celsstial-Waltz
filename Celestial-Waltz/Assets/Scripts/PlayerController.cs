@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour {
 
     float speed;
     float rotationSpeed;
-    bool needsExtrapolation = true;
+    bool needsExtrapolation;
 
     public static PlayerController instance;
 
@@ -43,7 +43,8 @@ public class PlayerController : MonoBehaviour {
     {
         if (metr.start)
             HandleControls();
-        if (needsExtrapolation && state == PlayerState.MovingForvard)
+        //if (needsExtrapolation && state == PlayerState.MovingForvard)
+        if (!targetArc || needsExtrapolation)
             ExtrapolateTrajectory();
         metr.deltaTime = 0;
     }
@@ -89,7 +90,15 @@ public class PlayerController : MonoBehaviour {
     {
         if (state == PlayerState.MovingForvard)
         {
-            Gizmos.color = Color.red;
+            if (targetArc)
+            {
+                Gizmos.color = Color.yellow;
+            }
+            else
+            {
+                Gizmos.color = Color.red;
+            }
+            
             Vector3 prevPosition = trajectExtrapolation[0];
             for (int i = 0; i < trajectExtrapolation.Length; i++)
             {

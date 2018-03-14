@@ -8,7 +8,8 @@ public class Arc : MonoBehaviour {
     public Metronome metr;
     public GameObject pointPrefab;
 
-    public float snapTime = 0.4f;
+    public float positionSnapTime = 0.4f;
+    public float rotationSnapTime = 0.4f;
     public float maxSnapSpeed = 20;
     public float gather_threshold;
     public float magnet_threshold;
@@ -34,13 +35,14 @@ public class Arc : MonoBehaviour {
     void OnEnable()
     {
         tr = transform;
+        rotation = transform.rotation.eulerAngles.z;
         foreach (var point in points)
         {
             initialPointsPositions.Add(point.GetLocalPosition());
         }
     }
 
-    void Update()
+    void FixedUpdate()
     {
         MovementUpdate();
         if (state == ArcState.Close)
@@ -56,18 +58,18 @@ public class Arc : MonoBehaviour {
         Vector3 relativePosition = tr.position - PlayerController.instance.tr.position;
         float distance = relativePosition.magnitude;
         float angle = Vector3.Angle(PlayerController.instance.direction, relativePosition.normalized);
-        int barDistance = (int)(distance / metr.scale);
+        //int barDistance = (int)(distance / metr.scale);
             
         if (state == ArcState.Snap)
         {
-            SnapUpdate(2);
+            SnapUpdate(1);
 
-            if (distance < 0.2 * metr.scale && angle < 40)
+            if (distance < 0.2 * metr.scale && angle < 10)
             {
                 state = ArcState.Close;
             }
         }
-        if (state == ArcState.Normal && barDistance < 4 && angle < 40)
+        if (state == ArcState.Normal && distance < 3 * metr.scale && angle < 40)
         {
             if (!PlayerController.instance.targetArc)
             {
@@ -79,12 +81,12 @@ public class Arc : MonoBehaviour {
 
     void SnapUpdate(int bar)
     {
-        //if (bar < 2) bar = 2;
         Vector3 target = PlayerController.instance.trajectExtrapolation[bar];
-        tr.position = Vector3.SmoothDamp(tr.position, target, ref vel, snapTime, maxSnapSpeed);
+        tr.position = Vector3.SmoothDamp(tr.position, target, ref vel, positionSnapTime, maxSnapSpeed);
 
-        rotation = Mathf.SmoothDamp(rotation, PlayerController.instance.rb.rotation, ref rotVel, snapTime);
-        tr.rotation = Quaternion.Euler(0, 0, rotation);
+        Quaternion targetRotation = Quaternion.Euler(0, 0, PlayerController.instance.rb.rotation);
+        tr.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.fixedDeltaTime / rotationSnapTime);
+        
     }
 
     void CheckPointsDistance()
