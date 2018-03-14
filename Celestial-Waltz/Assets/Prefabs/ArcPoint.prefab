@@ -20,7 +20,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4953911259192372}
   - component: {fileID: 212046545243573262}
-  - component: {fileID: 58132264468187210}
   - component: {fileID: 114391481167142742}
   m_Layer: 0
   m_Name: ArcPoint
@@ -42,21 +41,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &58132264468187210
-CircleCollider2D:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1300578755352030}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 0.5
 --- !u!114 &114391481167142742
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -68,7 +52,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed057b3aaa23545eab048b0c1ce8a83f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arc: {fileID: 0}
   index: 0
   click: {fileID: 8300000, guid: f970a57efe36b224eab4d72f5e42cf47, type: 3}
 --- !u!212 &212046545243573262

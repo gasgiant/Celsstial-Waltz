@@ -62,7 +62,7 @@ public class Arc : MonoBehaviour {
             
         if (state == ArcState.Snap)
         {
-            SnapUpdate(1);
+            SnapUpdate(2);
 
             if (distance < 0.2 * metr.scale && angle < 10)
             {

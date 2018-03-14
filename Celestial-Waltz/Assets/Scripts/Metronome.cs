@@ -27,6 +27,7 @@ public class Metronome : MonoBehaviour {
 
     public float dif;
     float strt;
+    bool isPlaing;
      
     void Awake()
     {
@@ -42,17 +43,27 @@ public class Metronome : MonoBehaviour {
             audioSource.Play();
         }
 
+        /*
+        if (start && Time.time > strt && !isPlaing)
+        {
+            isPlaing = true;
+            audioSource.Play();
+        }
+        */
+
         audioTime = (float)audioSource.timeSamples / 44100;
+
+
         float audioDeltaTime = audioTime - prevAudioTime;
 
-        if (audioDeltaTime != 0)
+        if (audioDeltaTime > float.Epsilon)
         {
             deltaTime = Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
             audioTimeStutter = 0;
         }
         else
         {
-            deltaTime = Time.fixedDeltaTime / 2f;
+            deltaTime = Time.fixedDeltaTime / 2;
             audioTimeStutter += deltaTime;
         }
 
