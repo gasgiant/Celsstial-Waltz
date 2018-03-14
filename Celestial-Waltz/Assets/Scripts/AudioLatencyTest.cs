@@ -14,7 +14,6 @@ public class AudioLatencyTest : MonoBehaviour {
 
     float lastBeat;
     bool gotBeat;
-    float lastAudioTime;
 
     List<float> lat = new List<float>();
 
@@ -26,11 +25,10 @@ public class AudioLatencyTest : MonoBehaviour {
     void FixedUpdate()
     {
         float time = (float)source.timeSamples / discr;
-        if (time - lastAudioTime > 0.6f)
+        if (time > (beatNum * 0.6f) + 0.03f)
         {
             gotBeat = false;
             beatNum++;
-            lastAudioTime = time;
             lastBeat = Time.time;
         }
         
