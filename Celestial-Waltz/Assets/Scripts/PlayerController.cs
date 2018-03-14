@@ -80,7 +80,7 @@ public class PlayerController : MonoBehaviour {
         Vector3 pos = tr.position;
         for (int i = 0; i < trajectExtrapolation.Length; i++)
         {
-            trajectExtrapolation[i] = pos + metr.scale * (i + 1 - 0.02f - metr.positionInBar) *
+            trajectExtrapolation[i] = pos + metr.scale * (i + 1 + 0.25f - metr.positionInBar) *
                 new Vector3(-Mathf.Sin(Mathf.Deg2Rad * rb.rotation), Mathf.Cos(Mathf.Deg2Rad * rb.rotation));
         }
         needsExtrapolation = false;
