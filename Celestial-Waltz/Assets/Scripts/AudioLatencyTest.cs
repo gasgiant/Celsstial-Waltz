@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AudioLatencyTest : MonoBehaviour {
 
+    public Text txt;
     public AudioSource source;
     public float averageLatency;
     public int count;
@@ -51,5 +53,6 @@ public class AudioLatencyTest : MonoBehaviour {
 
         averageLatency = sum / lat.Count;
         count = lat.Count;
+        txt.text = "Audio latency: " + averageLatency + "  count: " + count;
     }
 }

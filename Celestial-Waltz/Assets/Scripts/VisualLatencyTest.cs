@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class VisualLatencyTest : MonoBehaviour {
 
     public Transform jumper;
+    public Text txt;
 
     public float averageLatency;
     public int count;
@@ -60,5 +62,7 @@ public class VisualLatencyTest : MonoBehaviour {
 
         averageLatency = sum / lat.Count;
         count = lat.Count;
+
+        txt.text = "Visual latency: " + averageLatency + "  count: " + count;
     }
 }

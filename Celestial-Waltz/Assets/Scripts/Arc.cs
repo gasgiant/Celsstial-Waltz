@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
+//using UnityEditor;
 
 public class Arc : MonoBehaviour {
 
@@ -152,6 +152,7 @@ public class Arc : MonoBehaviour {
 
             for (int j = 0; j < pos.Count - 1; j++)
             {
+                /*
                 GameObject go = PrefabUtility.InstantiatePrefab(pointPrefab) as GameObject;
                 ArcPoint ap = go.GetComponent<ArcPoint>();
                 Transform tr = go.GetComponent<Transform>();
@@ -167,6 +168,7 @@ public class Arc : MonoBehaviour {
                 {
                     tr.localScale = Vector3.one * 0.25f;
                 }
+                */
             }
 
             nextStartPoint = nextStartPoint + pos[pos.Count - 1];
@@ -174,6 +176,7 @@ public class Arc : MonoBehaviour {
 
         if (!closed)
         {
+            /*
             GameObject go = PrefabUtility.InstantiatePrefab(pointPrefab) as GameObject;
             ArcPoint ap = go.GetComponent<ArcPoint>();
             Transform tr = go.GetComponent<Transform>();
@@ -184,6 +187,7 @@ public class Arc : MonoBehaviour {
 
             tr.parent = transform;
             tr.localPosition = nextStartPoint;
+            */
         }
     }
 
