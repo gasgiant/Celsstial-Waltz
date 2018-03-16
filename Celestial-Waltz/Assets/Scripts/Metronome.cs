@@ -36,7 +36,7 @@ public class Metronome : MonoBehaviour {
 
     void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (!start && (Input.GetKeyDown(KeyCode.Space) || Input.touchCount > 0))
         {
             start = true;
             strt = Time.time;
@@ -58,12 +58,12 @@ public class Metronome : MonoBehaviour {
 
         if (audioDeltaTime > float.Epsilon)
         {
-            deltaTime = Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
+            deltaTime = Time.fixedDeltaTime;//Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
             audioTimeStutter = 0;
         }
         else
         {
-            deltaTime = Time.fixedDeltaTime / 2;
+            deltaTime = Time.fixedDeltaTime;// / 2;
             audioTimeStutter += deltaTime;
         }
 

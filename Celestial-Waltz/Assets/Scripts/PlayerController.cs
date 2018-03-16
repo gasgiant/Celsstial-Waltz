@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
     public PlayerState state = PlayerState.Stoped;
+    public Slider slider;
     
     public Vector3 direction;
 
@@ -43,8 +45,8 @@ public class PlayerController : MonoBehaviour {
     {
         if (metr.start)
             HandleControls();
-        if (needsExtrapolation && state == PlayerState.MovingForvard)
-        //if (!targetArc || needsExtrapolation)
+        //if (needsExtrapolation && state == PlayerState.MovingForvard)
+        if (!targetArc || needsExtrapolation)
             ExtrapolateTrajectory();
         metr.deltaTime = 0;
     }
@@ -56,7 +58,7 @@ public class PlayerController : MonoBehaviour {
 
         state = PlayerState.MovingForvard;
 
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A) || (Input.touchCount > 0 && (Input.touches[0].position.x < Screen.width / 2)))
         {
 
             rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed;
@@ -64,7 +66,7 @@ public class PlayerController : MonoBehaviour {
             needsExtrapolation = true;
         }
 
-        if (Input.GetKey(KeyCode.D))
+        if (Input.GetKey(KeyCode.D) || (Input.touchCount > 0 && (Input.touches[0].position.x > Screen.width / 2)))
         {
             rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed;
             state = PlayerState.Rotating;
@@ -80,7 +82,7 @@ public class PlayerController : MonoBehaviour {
         Vector3 pos = tr.position;
         for (int i = 0; i < trajectExtrapolation.Length; i++)
         {
-            trajectExtrapolation[i] = pos + metr.scale * (i + 1 + 0.25f - metr.positionInBar) *
+            trajectExtrapolation[i] = pos + metr.scale * (i + 1 + slider.value / metr.currentFreq - metr.positionInBar) *
                 new Vector3(-Mathf.Sin(Mathf.Deg2Rad * rb.rotation), Mathf.Cos(Mathf.Deg2Rad * rb.rotation));
         }
         needsExtrapolation = false;
