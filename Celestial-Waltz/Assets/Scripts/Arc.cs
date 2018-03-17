@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-//using UnityEditor;
+using MarchingBytes;
 
 public class Arc : MonoBehaviour {
 
@@ -15,6 +14,8 @@ public class Arc : MonoBehaviour {
     public float magnet_threshold;
     public float magnet_velocity;
     public float fail_threshold = 7;
+    public float ignore_distance = 30;
+    public float ignore_angle = 90;
     public bool closed;
 
     public List<Bar> bars = new List<Bar>();
@@ -24,18 +25,25 @@ public class Arc : MonoBehaviour {
     int nextIndex;
     [HideInInspector]
     public List<ArcPoint> points;
-    Vector3 startDirection;
+    [HideInInspector]
+    public Vector3 startDirection;
     List<Vector3> initialPointsPositions = new List<Vector3>();
     Transform tr;
 
     Vector3 vel;
-    float rotation;
     float rotVel;
+    float inRotation;
 
     void OnEnable()
     {
+        Spawner.instance.arcs.Add(this);
+
         tr = transform;
-        rotation = transform.rotation.eulerAngles.z;
+        metr = Metronome.instance;
+        inRotation = Vector3.Angle(Vector3.up, startDirection);
+        if (Vector3.Cross(Vector3.up, startDirection).z > 0)
+            inRotation = 360 - inRotation;
+
         foreach (var point in points)
         {
             initialPointsPositions.Add(point.GetLocalPosition());
@@ -47,9 +55,11 @@ public class Arc : MonoBehaviour {
         MovementUpdate();
         if (state == ArcState.Close)
             CheckPointsDistance();
-        if (state == ArcState.Failed)
+        if (state == ArcState.Failed || state == ArcState.Ignored)
         {
+            //EasyObjectPool.instance.ReturnObjectToPool(gameObject);
             gameObject.SetActive(false);
+            Debug.Log("Buy!");
         }
     }
 
@@ -59,6 +69,9 @@ public class Arc : MonoBehaviour {
         float distance = relativePosition.magnitude;
         float angle = Vector3.Angle(PlayerController.instance.direction, relativePosition.normalized);
         //int barDistance = (int)(distance / metr.scale);
+
+        if (distance > ignore_distance && angle > ignore_angle)
+            state = ArcState.Ignored;
             
         if (state == ArcState.Snap)
         {
@@ -84,7 +97,7 @@ public class Arc : MonoBehaviour {
         Vector3 target = PlayerController.instance.trajectExtrapolation[bar];
         tr.position = Vector3.SmoothDamp(tr.position, target, ref vel, positionSnapTime, maxSnapSpeed);
 
-        Quaternion targetRotation = Quaternion.Euler(0, 0, PlayerController.instance.rb.rotation);
+        Quaternion targetRotation = Quaternion.Euler(0, 0, PlayerController.instance.rb.rotation + inRotation);
         tr.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.fixedDeltaTime / rotationSnapTime);
         
     }
@@ -128,70 +141,8 @@ public class Arc : MonoBehaviour {
         }  
     }
 
-    [ContextMenu("SetupPoints")]
-    public void SetupPoints()
-    {
-        if (points.Count != 0)
-        {
-            while (points.Count > 0)
-            {
-                GameObject go = points[0].gameObject;
-                points.Remove(points[0]);
-                DestroyImmediate(go);
-            }
-        }
 
-        Vector3 nextStartPoint = Vector3.zero;
-        int pointsCount = 0;
-        startDirection = GetStartDirection(bars[0].type, bars[0].reverse);
-
-        for (int i = 0; i < bars.Count; i++)
-        {
-            List<Vector3> pos = new List<Vector3>();
-            pos = GetBarsPointsPositions(bars[i].type, metr.scale, bars[i].reverse);
-
-            for (int j = 0; j < pos.Count - 1; j++)
-            {
-                /*
-                GameObject go = PrefabUtility.InstantiatePrefab(pointPrefab) as GameObject;
-                ArcPoint ap = go.GetComponent<ArcPoint>();
-                Transform tr = go.GetComponent<Transform>();
-
-                points.Add(ap);
-                ap.index = pointsCount;
-                pointsCount++;
-
-                tr.parent = transform;
-                tr.localPosition = nextStartPoint + pos[j];
-
-                if (j % metr.signature != 0)
-                {
-                    tr.localScale = Vector3.one * 0.25f;
-                }
-                */
-            }
-
-            nextStartPoint = nextStartPoint + pos[pos.Count - 1];
-        }
-
-        if (!closed)
-        {
-            /*
-            GameObject go = PrefabUtility.InstantiatePrefab(pointPrefab) as GameObject;
-            ArcPoint ap = go.GetComponent<ArcPoint>();
-            Transform tr = go.GetComponent<Transform>();
-
-            points.Add(ap);
-            ap.index = pointsCount;
-            pointsCount++;
-
-            tr.parent = transform;
-            tr.localPosition = nextStartPoint;
-            */
-        }
-    }
-
-    List<Vector3> GetBarsPointsPositions(BarType type, float scale, bool reverse = false, int signature = 3)
+    public List<Vector3> GetBarsPointsPositions(BarType type, float scale, bool reverse = false, int signature = 3)
     {
         List<Vector3> ret = new List<Vector3>();
         float r = scale * 2 / Mathf.PI;
@@ -229,7 +180,7 @@ public class Arc : MonoBehaviour {
             case BarType.Line0:
                 for (int i = 0; i < signature + 1; i++)
                 {
-                    ret.Add(new Vector3(scale * (float)i / signature,0));
+                    ret.Add(new Vector3(scale * (float)i / signature, 0));
                 }
                 break;
             case BarType.Line1:
@@ -278,7 +229,7 @@ public class Arc : MonoBehaviour {
         return dir;
     }
 
-    enum ArcState { Gathered, Failed, Close, Snap, Normal}
+    enum ArcState { Gathered, Failed, Ignored, Close, Snap, Normal}
     public enum BarType { Circle0, Circle1, Circle2, Circle3, Line0, Line1 }
 
     [System.Serializable]
