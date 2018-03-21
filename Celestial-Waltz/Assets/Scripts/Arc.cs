@@ -7,15 +7,15 @@ public class Arc : MonoBehaviour {
     public Metronome metr;
     public GameObject pointPrefab;
 
-    public float positionSnapTime = 0.4f;
-    public float rotationSnapTime = 0.4f;
-    public float maxSnapSpeed = 20;
-    public float gather_threshold;
-    public float magnet_threshold;
-    public float magnet_velocity;
-    public float fail_threshold = 7;
-    public float ignore_distance = 30;
-    public float ignore_angle = 90;
+    float positionSnapTime = 0.4f;
+    float rotationSnapTime = 0.4f;
+    float maxSnapSpeed = 20;
+    float gather_threshold;
+    float magnet_threshold;
+    float magnet_velocity;
+    float fail_threshold = 7;
+    float ignore_distance = 30;
+    float ignore_angle = 90;
     public bool closed;
 
     public List<Bar> bars = new List<Bar>();
@@ -27,6 +27,8 @@ public class Arc : MonoBehaviour {
     public List<ArcPoint> points;
     [HideInInspector]
     public Vector3 startDirection;
+    [HideInInspector]
+    public bool spawned;
     List<Vector3> initialPointsPositions = new List<Vector3>();
     Transform tr;
 
@@ -36,60 +38,83 @@ public class Arc : MonoBehaviour {
 
     void OnEnable()
     {
-        Spawner.instance.arcs.Add(this);
+        if (spawned)
+            Spawner.instance.arcs.Add(this);
+        else
+        {
+            spawned = true;
+            tr = transform;
+            metr = Metronome.instance;
+            inRotation = Vector3.Angle(Vector3.up, startDirection);
+            if (Vector3.Cross(Vector3.up, startDirection).z > 0)
+                inRotation = 360 - inRotation;
 
-        tr = transform;
-        metr = Metronome.instance;
-        inRotation = Vector3.Angle(Vector3.up, startDirection);
-        if (Vector3.Cross(Vector3.up, startDirection).z > 0)
-            inRotation = 360 - inRotation;
+            Options op = Options.instance;
+            positionSnapTime = op.positionSnapTime;
+            rotationSnapTime = op.rotationSnapTime;
+            maxSnapSpeed = op.maxSnapSpeed;
+            gather_threshold = op.gather_threshold;
+            magnet_threshold = op.magnet_threshold;
+            magnet_velocity = op.magnet_velocity;
+            fail_threshold = op.fail_threshold;
+            ignore_distance = op.ignore_distance;
+            ignore_angle = op.ignore_angle;
+        }   
+
+        state = ArcState.Normal;
+        nextIndex = 0;
 
         foreach (var point in points)
         {
+            point.Activate();
             initialPointsPositions.Add(point.GetLocalPosition());
         }
     }
 
     void FixedUpdate()
     {
-        MovementUpdate();
-        if (state == ArcState.Close)
-            CheckPointsDistance();
-        if (state == ArcState.Failed || state == ArcState.Ignored)
-        {
-            //EasyObjectPool.instance.ReturnObjectToPool(gameObject);
-            gameObject.SetActive(false);
-            Debug.Log("Buy!");
-        }
-    }
-
-    void MovementUpdate()
-    {
         Vector3 relativePosition = tr.position - PlayerController.instance.tr.position;
         float distance = relativePosition.magnitude;
         float angle = Vector3.Angle(PlayerController.instance.direction, relativePosition.normalized);
-        //int barDistance = (int)(distance / metr.scale);
 
-        if (distance > ignore_distance && angle > ignore_angle)
-            state = ArcState.Ignored;
-            
-        if (state == ArcState.Snap)
+        switch (state)
         {
-            SnapUpdate(1);
-
-            if (distance < 0.2 * metr.scale && angle < 10)
-            {
-                state = ArcState.Close;
-            }
+            case ArcState.Gathered:
+                GetBackToPool();
+                break;
+            case ArcState.Failed:
+                GetBackToPool();
+                break;
+            case ArcState.Ignored:
+                GetBackToPool();
+                break;
+            case ArcState.Close:
+                CheckPointsDistance();
+                break;
+            case ArcState.Snap:
+                SnapUpdate(1);
+                if (distance < 0.2 * metr.scale && angle < 10)
+                {
+                    state = ArcState.Close;
+                }
+                break;
+            case ArcState.Normal:
+                if (distance > ignore_distance && angle > ignore_angle)
+                    state = ArcState.Ignored;
+                if (!PlayerController.instance.targetArc && distance < 3 * metr.scale && angle < 40)
+                {
+                    state = ArcState.Snap;
+                    PlayerController.instance.targetArc = tr;
+                }
+                break;
         }
-        if (state == ArcState.Normal && distance < 3 * metr.scale && angle < 40)
-        {
-            if (!PlayerController.instance.targetArc)
-            {
-                state = ArcState.Snap;
-                PlayerController.instance.targetArc = tr;
-            }
-        }    
+    }
+
+    void GetBackToPool()
+    {
+        points[nextIndex].SetLocalPosition(initialPointsPositions[nextIndex]);
+        Spawner.instance.arcs.Remove(this);
+        EasyObjectPool.instance.ReturnObjectToPool(gameObject);
     }
 
     void SnapUpdate(int bar)
@@ -104,13 +129,6 @@ public class Arc : MonoBehaviour {
 
     void CheckPointsDistance()
     {
-        if (nextIndex > points.Count - 1)
-        {
-            state = ArcState.Gathered;
-            PlayerController.instance.targetArc = null;
-            return;
-        }
-
         Vector3 nextPointLocalPosition = points[nextIndex].GetLocalPosition();
         Vector3 playerLocalPosition = tr.InverseTransformPoint(PlayerController.instance.tr.position);
         float distance = (nextPointLocalPosition - playerLocalPosition).magnitude;
@@ -136,8 +154,14 @@ public class Arc : MonoBehaviour {
         if (distance < gather_threshold)
         {
             points[nextIndex].Diactivate();
+            points[nextIndex].SetLocalPosition(initialPointsPositions[nextIndex]);
             nextIndex++;
-                
+            if (nextIndex > points.Count - 1)
+            {
+                nextIndex = points.Count - 1;
+                state = ArcState.Gathered;
+                PlayerController.instance.targetArc = null;
+            }
         }  
     }
 

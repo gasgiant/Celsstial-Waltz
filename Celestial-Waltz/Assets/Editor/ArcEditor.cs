@@ -20,6 +20,7 @@ public class ArcEditor : Editor
     private void OnEnable()
     {
         arc = target as Arc;
+        arc.metr = GameObject.Find("Metronome").GetComponent<Metronome>();
     }
 
     public void SetupPoints()
@@ -59,6 +60,10 @@ public class ArcEditor : Editor
                 if (j % arc.metr.signature != 0)
                 {
                     tr.localScale = Vector3.one * 0.25f;
+                }
+                else
+                {
+                    tr.localScale = Vector3.one * 0.5f;
                 }
             }
 

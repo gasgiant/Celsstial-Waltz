@@ -5,6 +5,7 @@ using UnityEngine;
 public class ArcPoint : MonoBehaviour {
 
     public int index;
+    public GameObject visual;
     public AudioClip click;
 
     Transform tr;
@@ -19,7 +20,12 @@ public class ArcPoint : MonoBehaviour {
     public void Diactivate()
     {
         //AudioSource.PlayClipAtPoint(click, tr.position);
-        go.SetActive(false);
+        visual.SetActive(false);
+    }
+
+    public void Activate()
+    {
+        visual.SetActive(true);
     }
 
     public void SetPosition(Vector3 newPosition)
