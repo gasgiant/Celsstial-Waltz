@@ -82,6 +82,7 @@ public class ArcEditor : Editor
 
             tr.parent = arc.transform;
             tr.localPosition = nextStartPoint;
+            tr.localScale = Vector3.one * 0.5f;
         }
     }
 }

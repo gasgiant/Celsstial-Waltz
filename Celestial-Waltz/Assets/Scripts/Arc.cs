@@ -154,6 +154,7 @@ public class Arc : MonoBehaviour {
         if (distance < gather_threshold)
         {
             points[nextIndex].Diactivate();
+            Score.instance.IncrementScore();
             points[nextIndex].SetLocalPosition(initialPointsPositions[nextIndex]);
             nextIndex++;
             if (nextIndex > points.Count - 1)
