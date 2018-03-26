@@ -35,9 +35,16 @@ public class ArcEditor : Editor
             }
         }
 
+        arc.bars.Clear();
+        Arc.Direction drc = Arc.Direction.Up;
+
+        for (int i = 0; i < arc.bars_directions.Count; i++)
+        {
+            arc.bars.Add(arc.GetBars(drc, arc.bars_directions[i], ref drc));
+        }
+
         Vector3 nextStartPoint = Vector3.zero;
         int pointsCount = 0;
-        arc.startDirection = arc.GetStartDirection(arc.bars[0].type, arc.bars[0].reverse);
 
         for (int i = 0; i < arc.bars.Count; i++)
         {

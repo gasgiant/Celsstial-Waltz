@@ -10,6 +10,7 @@ public class Arc : MonoBehaviour {
     float positionSnapTime = 0.4f;
     float rotationSnapTime = 0.4f;
     float maxSnapSpeed = 20;
+    float close_threshold;
     float gather_threshold;
     float magnet_threshold;
     float magnet_velocity;
@@ -18,15 +19,19 @@ public class Arc : MonoBehaviour {
     float ignore_angle = 90;
     public bool closed;
 
+
+    public List<RelativeDirection> bars_directions;
+
+    [HideInInspector]
     public List<Bar> bars = new List<Bar>();
 
     ArcState state = ArcState.Normal;
 
     int nextIndex;
+
     [HideInInspector]
     public List<ArcPoint> points;
-    [HideInInspector]
-    public Vector3 startDirection;
+
     [HideInInspector]
     public bool spawned;
     List<Vector3> initialPointsPositions = new List<Vector3>();
@@ -34,7 +39,6 @@ public class Arc : MonoBehaviour {
 
     Vector3 vel;
     float rotVel;
-    float inRotation;
 
     void OnEnable()
     {
@@ -45,14 +49,12 @@ public class Arc : MonoBehaviour {
             spawned = true;
             tr = transform;
             metr = Metronome.instance;
-            inRotation = Vector3.Angle(Vector3.up, startDirection);
-            if (Vector3.Cross(Vector3.up, startDirection).z > 0)
-                inRotation = 360 - inRotation;
 
             Options op = Options.instance;
             positionSnapTime = op.positionSnapTime;
             rotationSnapTime = op.rotationSnapTime;
             maxSnapSpeed = op.maxSnapSpeed;
+            close_threshold = op.close_threshold;
             gather_threshold = op.gather_threshold;
             magnet_threshold = op.magnet_threshold;
             magnet_velocity = op.magnet_velocity;
@@ -92,8 +94,8 @@ public class Arc : MonoBehaviour {
                 CheckPointsDistance();
                 break;
             case ArcState.Snap:
-                SnapUpdate(1);
-                if (distance < 0.2 * metr.scale && angle < 10)
+                SnapUpdate(2);
+                if (distance < close_threshold * metr.scale && angle < 10)
                 {
                     state = ArcState.Close;
                 }
@@ -104,7 +106,7 @@ public class Arc : MonoBehaviour {
                 if (!PlayerController.instance.targetArc && distance < 3 * metr.scale && angle < 40)
                 {
                     state = ArcState.Snap;
-                    PlayerController.instance.targetArc = tr;
+                    PlayerController.instance.targetArc = this;
                 }
                 break;
         }
@@ -122,7 +124,7 @@ public class Arc : MonoBehaviour {
         Vector3 target = PlayerController.instance.trajectExtrapolation[bar];
         tr.position = Vector3.SmoothDamp(tr.position, target, ref vel, positionSnapTime, maxSnapSpeed);
 
-        Quaternion targetRotation = Quaternion.Euler(0, 0, PlayerController.instance.rb.rotation + inRotation);
+        Quaternion targetRotation = Quaternion.Euler(0, 0, PlayerController.instance.rb.rotation);
         tr.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.fixedDeltaTime / rotationSnapTime);
         
     }
@@ -227,35 +229,101 @@ public class Arc : MonoBehaviour {
         return ret;
     }
 
-    public Vector3 GetStartDirection(BarType type, bool reverse)
+    public Bar GetBars(Direction direction, RelativeDirection rd, ref Direction endDirection)
     {
-        Vector3 dir = Vector3.right;
-        switch (type)
+        Bar bar = new Bar();
+        switch (direction)
         {
-            case BarType.Circle0:
-                dir = Vector3.up;
+            case Direction.Right:
+                switch (rd)
+                {
+                    case RelativeDirection.Forward:
+                        bar.type = BarType.Line0;
+                        bar.reverse = false;
+                        endDirection = Direction.Right;
+                        break;
+                    case RelativeDirection.Clockwise:
+                        bar.type = BarType.Circle1;
+                        bar.reverse = true;
+                        endDirection = Direction.Down;
+                        break;
+                    case RelativeDirection.Counter_Clockwise:
+                        bar.type = BarType.Circle3;
+                        bar.reverse = false;
+                        endDirection = Direction.Up;
+                        break;
+                }
                 break;
-            case BarType.Circle1:
-                dir = reverse ? Vector3.right : Vector3.left;
+            case Direction.Left:
+                switch (rd)
+                {
+                    case RelativeDirection.Forward:
+                        bar.type = BarType.Line0;
+                        bar.reverse = true;
+                        endDirection = Direction.Left;
+                        break;
+                    case RelativeDirection.Clockwise:
+                        bar.type = BarType.Circle3;
+                        bar.reverse = true;
+                        endDirection = Direction.Up;
+                        break;
+                    case RelativeDirection.Counter_Clockwise:
+                        bar.type = BarType.Circle1;
+                        bar.reverse = false;
+                        endDirection = Direction.Down;
+                        break;
+                }
                 break;
-            case BarType.Circle2:
-                dir = Vector3.down;
+            case Direction.Up:
+                switch (rd)
+                {
+                    case RelativeDirection.Forward:
+                        bar.type = BarType.Line1;
+                        bar.reverse = false;
+                        endDirection = Direction.Up;
+                        break;
+                    case RelativeDirection.Clockwise:
+                        bar.type = BarType.Circle0;
+                        bar.reverse = true;
+                        endDirection = Direction.Right;
+                        break;
+                    case RelativeDirection.Counter_Clockwise:
+                        bar.type = BarType.Circle0;
+                        bar.reverse = false;
+                        endDirection = Direction.Left;
+                        break;
+                }
                 break;
-            case BarType.Circle3:
-                dir = reverse ? Vector3.left : Vector3.right;
-                break;
-            case BarType.Line0:
-                dir = reverse ? Vector3.left : Vector3.right;
-                break;
-            case BarType.Line1:
-                dir = reverse ? Vector3.down : Vector3.up;
+            case Direction.Down:
+                switch (rd)
+                {
+                    case RelativeDirection.Forward:
+                        bar.type = BarType.Line1;
+                        bar.reverse = true;
+                        endDirection = Direction.Down;
+                        break;
+                    case RelativeDirection.Clockwise:
+                        bar.type = BarType.Circle2;
+                        bar.reverse = true;
+                        endDirection = Direction.Left;
+                        break;
+                    case RelativeDirection.Counter_Clockwise:
+                        bar.type = BarType.Circle2;
+                        bar.reverse = false;
+                        endDirection = Direction.Right;
+                        break;
+                }
                 break;
         }
-        return dir;
+        return bar;
     }
 
     enum ArcState { Gathered, Failed, Ignored, Close, Snap, Normal}
     public enum BarType { Circle0, Circle1, Circle2, Circle3, Line0, Line1 }
+
+    public enum RelativeDirection { Forward, Clockwise, Counter_Clockwise }
+
+    public enum Direction { Right, Left, Up, Down }
 
     [System.Serializable]
     public class Bar

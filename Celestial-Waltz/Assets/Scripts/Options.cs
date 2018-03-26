@@ -9,6 +9,7 @@ public class Options : MonoBehaviour {
     public float positionSnapTime = 0.4f;
     public float rotationSnapTime = 0.4f;
     public float maxSnapSpeed = 20;
+    public float close_threshold = 0.2f;
     public float gather_threshold;
     public float magnet_threshold;
     public float magnet_velocity;

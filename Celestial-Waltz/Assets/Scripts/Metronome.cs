@@ -56,16 +56,19 @@ public class Metronome : MonoBehaviour {
 
         float audioDeltaTime = audioTime - prevAudioTime;
 
+        /*
         if (audioDeltaTime > float.Epsilon)
         {
-            deltaTime = Time.fixedDeltaTime;//Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
+            deltaTime = Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
             audioTimeStutter = 0;
         }
         else
         {
-            deltaTime = Time.fixedDeltaTime;// / 2;
+            deltaTime = Time.fixedDeltaTime / 2;
             audioTimeStutter += deltaTime;
         }
+        */
+        deltaTime = Time.fixedDeltaTime;
 
         prevAudioTime = audioTime;
 

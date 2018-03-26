@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour {
 
     public PlayerState state = PlayerState.Stoped;
+
+    public Joystick joystick;
     
     public Vector3 direction;
     bool touchControl;
@@ -21,7 +23,7 @@ public class PlayerController : MonoBehaviour {
     float audioTimeStutter;
 
     [HideInInspector]
-    public Transform targetArc;
+    public Arc targetArc;
 
     [HideInInspector]
     public Rigidbody2D rb;
@@ -67,6 +69,7 @@ public class PlayerController : MonoBehaviour {
 
     void HandleControls(bool touchControl)
     {
+        /*
         if (touchControl && Input.touchCount > 0 && Input.touches[0].position.y < Screen.height / 2)
         {
             if ((Input.touches[0].position.x < Screen.width / 2))
@@ -100,6 +103,60 @@ public class PlayerController : MonoBehaviour {
             }
         }
         
+        int barInd = -1;
+        if (targetArc) barInd = Mathf.FloorToInt(metr.current_bar - targetArc.startBarIndex + metr.positionInBar 
+            + 0.02f - Options.instance.latency / metr.currentFreq);
+
+
+        if (targetArc && barInd >= 0 && barInd < targetArc.bars_directions.Count)
+        {
+            Arc.RelativeDirection rf = targetArc.bars_directions[barInd];
+
+            if (rf == Arc.RelativeDirection.Counter_Clockwise)
+            {
+                rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed;
+                state = PlayerState.Rotating;
+                needsExtrapolation = true;
+            }
+
+            if (rf == Arc.RelativeDirection.Clockwise)
+            {
+                rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed;
+                state = PlayerState.Rotating;
+                needsExtrapolation = true;
+            }
+        }
+        */
+        if (joystick.touched)
+        {
+            float angle = Vector3.Angle(direction, -joystick.direction);
+            float cross = Vector3.Cross(-joystick.direction, direction).z;
+
+            if (Mathf.Abs(cross) > 0.1f)
+            {
+                
+                if (cross > 0)
+                {
+                    rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed * 1.05f;
+                    state = PlayerState.Rotating;
+                    needsExtrapolation = true;
+                }
+
+                if (cross < 0)
+                {
+                    rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed * 1.05f;
+                    state = PlayerState.Rotating;
+                    needsExtrapolation = true;
+                }
+
+            }
+        }
+        
+
+
+
+
+
     }
 
     void ExtrapolateTrajectory()
