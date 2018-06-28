@@ -15,7 +15,6 @@ public class Metronome : MonoBehaviour {
 
     //[HideInInspector]
     public float currentFreq = 1; // bars per second
-    public bool start;
 
     public int current_bar;
     public float positionInBar;
@@ -34,55 +33,50 @@ public class Metronome : MonoBehaviour {
         instance = this;
     }
 
+    public void Restart()
+    {
+        strt = Time.time;
+        audioSource.Play();
+        current_bar = 0;
+    }
+
     void FixedUpdate()
     {
-        if (!start && (Input.GetKeyDown(KeyCode.Space) || Input.touchCount > 0))
+        if (GameManager.gameState == GameManager.GameState.Normal)
         {
-            start = true;
-            strt = Time.time;
-            audioSource.Play();
-        }
-
-        /*
-        if (start && Time.time > strt && !isPlaing)
-        {
-            isPlaing = true;
-            audioSource.Play();
-        }
-        */
-
-        audioTime = (float)audioSource.timeSamples / 44100;
 
 
-        float audioDeltaTime = audioTime - prevAudioTime;
+            audioTime = (float)audioSource.timeSamples / 44100;
+            float audioDeltaTime = audioTime - prevAudioTime;
 
-        /*
-        if (audioDeltaTime > float.Epsilon)
-        {
-            deltaTime = Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
-            audioTimeStutter = 0;
-        }
-        else
-        {
-            deltaTime = Time.fixedDeltaTime / 2;
-            audioTimeStutter += deltaTime;
-        }
-        */
-        deltaTime = Time.fixedDeltaTime;
-
-        prevAudioTime = audioTime;
-
-        dif = Time.time - strt - audioTime;
-
-        for (int i = current_bar; i < tempotrack.times.Length; i++)
-        {
-            if (tempotrack.times[i] > audioTime)
+            /*
+            if (audioDeltaTime > float.Epsilon)
             {
-                current_bar = i;
-                break;
+                deltaTime = Mathf.Clamp01(audioDeltaTime - audioTimeStutter);
+                audioTimeStutter = 0;
             }
+            else
+            {
+                deltaTime = Time.fixedDeltaTime / 2;
+                audioTimeStutter += deltaTime;
+            }
+            */
+            deltaTime = Time.fixedDeltaTime;
+
+            prevAudioTime = audioTime;
+
+            dif = Time.time - strt - audioTime;
+
+            for (int i = current_bar; i < tempotrack.times.Length; i++)
+            {
+                if (tempotrack.times[i] > audioTime)
+                {
+                    current_bar = i;
+                    break;
+                }
+            }
+            currentFreq = tempotrack.bpms[current_bar - 1] / 60 / signature;
+            positionInBar = (audioTime - tempotrack.times[current_bar - 1]) * currentFreq;
         }
-        currentFreq = tempotrack.bpms[current_bar - 1] / 60 / signature;
-        positionInBar = (audioTime - tempotrack.times[current_bar - 1]) * currentFreq;
     }
 }

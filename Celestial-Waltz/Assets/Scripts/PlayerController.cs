@@ -46,12 +46,18 @@ public class PlayerController : MonoBehaviour {
 
     void FixedUpdate ()
     {
-        if (metr.start)
+        if (GameManager.gameState == GameManager.GameState.Normal)
             MovementUpdate();
         //if (needsExtrapolation && state == PlayerState.MovingForvard)
         if (!targetArc || needsExtrapolation)
             ExtrapolateTrajectory();
         metr.deltaTime = 0;
+    }
+
+    public void Reset()
+    {
+        direction = Vector3.up;
+        rb.rotation = 0;
     }
 
     void MovementUpdate()
@@ -69,64 +75,6 @@ public class PlayerController : MonoBehaviour {
 
     void HandleControls(bool touchControl)
     {
-        /*
-        if (touchControl && Input.touchCount > 0 && Input.touches[0].position.y < Screen.height / 2)
-        {
-            if ((Input.touches[0].position.x < Screen.width / 2))
-            {
-                rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed;
-                state = PlayerState.Rotating;
-                needsExtrapolation = true;
-            }
-
-            if ((Input.touches[0].position.x > Screen.width / 2))
-            {
-                rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed;
-                state = PlayerState.Rotating;
-                needsExtrapolation = true;
-            }
-        }
-        else
-        {
-            if (Input.GetKey(KeyCode.A))
-            {
-                rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed;
-                state = PlayerState.Rotating;
-                needsExtrapolation = true;
-            }
-
-            if (Input.GetKey(KeyCode.D))
-            {
-                rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed;
-                state = PlayerState.Rotating;
-                needsExtrapolation = true;
-            }
-        }
-        
-        int barInd = -1;
-        if (targetArc) barInd = Mathf.FloorToInt(metr.current_bar - targetArc.startBarIndex + metr.positionInBar 
-            + 0.02f - Options.instance.latency / metr.currentFreq);
-
-
-        if (targetArc && barInd >= 0 && barInd < targetArc.bars_directions.Count)
-        {
-            Arc.RelativeDirection rf = targetArc.bars_directions[barInd];
-
-            if (rf == Arc.RelativeDirection.Counter_Clockwise)
-            {
-                rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed;
-                state = PlayerState.Rotating;
-                needsExtrapolation = true;
-            }
-
-            if (rf == Arc.RelativeDirection.Clockwise)
-            {
-                rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed;
-                state = PlayerState.Rotating;
-                needsExtrapolation = true;
-            }
-        }
-        */
         if (joystick.touched)
         {
             float angle = Vector3.Angle(direction, -joystick.direction);
@@ -134,29 +82,26 @@ public class PlayerController : MonoBehaviour {
 
             if (Mathf.Abs(cross) > 0.1f)
             {
-                
+                rb.rotation = rb.rotation + metr.deltaTime * Mathf.Clamp(cross * 5 * rotationSpeed, -rotationSpeed, rotationSpeed) ;
+                state = PlayerState.Rotating;
+                needsExtrapolation = true;
+
+                /*
                 if (cross > 0)
                 {
-                    rb.rotation = rb.rotation + metr.deltaTime * rotationSpeed * 1.05f;
-                    state = PlayerState.Rotating;
-                    needsExtrapolation = true;
+                    
                 }
 
                 if (cross < 0)
                 {
-                    rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed * 1.05f;
+                    rb.rotation = rb.rotation - metr.deltaTime * rotationSpeed * 1.2f;
                     state = PlayerState.Rotating;
                     needsExtrapolation = true;
                 }
+                */
 
             }
         }
-        
-
-
-
-
-
     }
 
     void ExtrapolateTrajectory()

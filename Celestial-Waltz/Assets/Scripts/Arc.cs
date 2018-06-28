@@ -85,6 +85,7 @@ public class Arc : MonoBehaviour {
                 GetBackToPool();
                 break;
             case ArcState.Failed:
+                GameManager.instance.GameOver();
                 GetBackToPool();
                 break;
             case ArcState.Ignored:
